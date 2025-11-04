@@ -1,70 +1,71 @@
-
-```mermaid
 flowchart LR
-    subgraph USER["User / Business Request"]
-        UC["Use Case Input + Context"]
+    %%==============================
+    %% Agentic AI Concept Factory (Tool-integrated Flow)
+    %%==============================
+
+    subgraph user["User / Business Request"]
+        uc["Use Case Input + Context"]
     end
 
-    subgraph ORCH["🧠 Orchestrator Layer (CrewAI)"]
-        P1["Planner Agent"]
-        R1["Router Agent"]
-        O1["Optimizer Agent"]
-        G1["Guard Agent"]
+    subgraph orchestrator["Orchestrator Layer (CrewAI)"]
+        p1["Planner Agent"]
+        r1["Router Agent"]
+        o1["Optimizer Agent"]
+        g1["Guard Agent"]
     end
 
-    subgraph MCP["🧩 MCP Tool Bus"]
-        M1["Registry Server (ClearML SDK)"]
-        M2["Eval Server (ClearML / Eval Scripts)"]
-        M3["Deploy Server (ClearML-Serving / Triton / KServe)"]
-        M4["Data Server (SQL / DW / Data Lake)"]
-        M5["Vector DB Server (Milvus / Qdrant)"]
-        M6["Policy Server (Security / Risk / OPA Rules)"]
+    subgraph mcp_bus["MCP Tool Bus"]
+        m1["Registry Server (ClearML SDK)"]
+        m2["Eval Server (ClearML / Eval Scripts)"]
+        m3["Deploy Server (ClearML-Serving / Triton / KServe)"]
+        m4["Data Server (SQL / DW / Data Lake)"]
+        m5["Vector DB Server (Milvus / Qdrant)"]
+        m6["Policy Server (Security / Risk / OPA Rules)"]
     end
 
-    subgraph CLEARML["📘 ClearML Platform"]
-        CL1["Model Registry"]
-        CL2["Datasets & Artifacts"]
-        CL3["Experiments & Metrics"]
-        CL4["Pipelines & Queues"]
-        CL5["ClearML-Serving (GPU-based Inference)"]
+    subgraph clearml["ClearML Platform"]
+        cl1["Model Registry"]
+        cl2["Datasets & Artifacts"]
+        cl3["Experiments & Metrics"]
+        cl4["Pipelines & Queues"]
+        cl5["ClearML-Serving (GPU-based Inference)"]
     end
 
-    subgraph GPU["💻 In-House GPU Cluster"]
-        GPUT["Training / Fine-tune Jobs"]
-        GPUS["Serving Endpoints"]
+    subgraph gpu_cluster["In-House GPU Cluster"]
+        gput["Training / Fine-tune Jobs"]
+        gpus["Serving Endpoints"]
     end
 
-    subgraph AIRFLOW["🕒 Apache Airflow (Ops Scheduler)"]
-        AF1["Nightly Evals"]
-        AF2["Dataset Refresh"]
-        AF3["Canary Promotions"]
-        AF4["Audit & Governance DAGs"]
+    subgraph airflow_sys["Apache Airflow (Ops Scheduler)"]
+        af1["Nightly Evals"]
+        af2["Dataset Refresh"]
+        af3["Canary Promotions"]
+        af4["Audit & Governance DAGs"]
     end
 
-    subgraph OUTPUT["📊 Outputs / Human Feedback Loop"]
-        H1["Evaluation Reports & Dashboards"]
-        H2["Model Cards++ / Use Case Cards"]
-        H3["Human Approvals & Feedback"]
+    subgraph output_sys["Outputs / Human Feedback Loop"]
+        h1["Evaluation Reports & Dashboards"]
+        h2["Model Cards++ / Use Case Cards"]
+        h3["Human Approvals & Feedback"]
     end
 
     %%==============================
     %% Flow Connections
     %%==============================
-    UC --> ORCH
+    uc --> orchestrator
+    orchestrator -->|Tool Calls via MCP| mcp_bus
+    mcp_bus -->|Uses ClearML SDK & APIs| clearml
+    clearml -->|Runs on Queues| gpu_cluster
+    gpu_cluster -->|Results + Models| clearml
 
-    ORCH -->|Tool Calls via MCP| MCP
-    MCP -->|Uses ClearML SDK & APIs| CLEARML
-    CLEARML -->|Runs on Queues| GPU
-    GPU -->|Results + Models| CLEARML
+    airflow_sys -->|Schedules ClearML Pipelines| clearml
+    airflow_sys -->|Triggers MCP (Deploy/Promote)| mcp_bus
 
-    AIRFLOW -->|Schedules ClearML Pipelines| CLEARML
-    AIRFLOW -->|Triggers MCP (Deploy/Promote)| MCP
+    clearml -->|Metrics & Lineage| output_sys
+    output_sys -->|Feedback / KPIs| clearml
 
-    CLEARML -->|Metrics & Lineage| OUTPUT
-    OUTPUT -->|Feedback / KPIs| CLEARML
-
-    ORCH -->|Governance Queries| M6
-    G1 -->|Security & Policy Checks| M6
+    orchestrator -->|Governance Queries| m6
+    g1 -->|Security & Policy Checks| m6
 
     %%==============================
     %% Styling
@@ -76,10 +77,9 @@ flowchart LR
     classDef airflow fill:#f3e8ff,stroke:#7e22ce,stroke-width:1px,color:#000;
     classDef output fill:#fee2e2,stroke:#b91c1c,stroke-width:1px,color:#000;
 
-    class ORCH,P1,R1,O1,G1 orchestrator;
-    class MCP,M1,M2,M3,M4,M5,M6 mcp;
-    class CLEARML,CL1,CL2,CL3,CL4,CL5 clearml;
-    class GPU,GPUT,GPUS gpu;
-    class AIRFLOW,AF1,AF2,AF3,AF4 airflow;
-    class OUTPUT,H1,H2,H3 output;
-```
+    class orchestrator,p1,r1,o1,g1 orchestrator;
+    class mcp_bus,m1,m2,m3,m4,m5,m6 mcp;
+    class clearml,cl1,cl2,cl3,cl4,cl5 clearml;
+    class gpu_cluster,gput,gpus gpu;
+    class airflow_sys,af1,af2,af3,af4 airflow;
+    class output_sys,h1,h2,h3 output;
