@@ -1,8 +1,6 @@
-flowchart TD
-    %%==============================
-    %% Agentic AI Concept Factory - Tool-integrated Flow
-    %%==============================
 
+```mermaid
+flowchart LR
     subgraph USER["User / Business Request"]
         UC["Use Case Input + Context"]
     end
@@ -84,3 +82,4 @@ flowchart TD
     class GPU,GPUT,GPUS gpu;
     class AIRFLOW,AF1,AF2,AF3,AF4 airflow;
     class OUTPUT,H1,H2,H3 output;
+```
